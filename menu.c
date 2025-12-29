@@ -6,14 +6,19 @@ enum {
 	MENU_BTDD
 };
 
-extern const unsigned char chr_data[1536];
+enum {
+	BT = 0x01,
+	BTDD = 0x05
+};
+
+extern const unsigned char chr_data[0x600];
 
 unsigned int cursor_pos = MENU_BT;
 static unsigned char pad;
 
-const char text_title[] = "      SELECT GAME:";
-const char text_bt[]    = "BATTLETOADS";
-const char text_btdd[]  = "BATTLETOADS & DOUBLE DRAGON";
+const char TEXT_TITLE[] = "      SELECT GAME:";
+const char TEXT_BT[]    = "BATTLETOADS";
+const char TEXT_BTDD[]  = "BATTLETOADS & DOUBLE DRAGON";
 
 void load_chr_ram(const unsigned char* data, unsigned int size, unsigned int adr) {
 	unsigned int i;
@@ -44,9 +49,9 @@ void set_colors(void) {
 
 void draw_menu(void) {
 	set_colors();
-	put_str(NTADR_A(4, 8), text_title);
-    put_str(NTADR_A(4, 10), text_bt);
-    put_str(NTADR_A(4, 12), text_btdd);
+	put_str(NTADR_A(4, 8), TEXT_TITLE);
+    put_str(NTADR_A(4, 10), TEXT_BT);
+    put_str(NTADR_A(4, 12), TEXT_BTDD);
 }
 
 void set_cursor(unsigned char sprite1, unsigned char sprite2) {
@@ -91,7 +96,7 @@ void jump_to_game(unsigned char game_number) {
 
 void main(void) {
 	ppu_off();
-	load_chr_ram(chr_data, sizeof(chr_data), 0);
+	load_chr_ram(chr_data, 0x600, 0);
     draw_menu();
     update_cursor();
 	ppu_on_all();
@@ -112,8 +117,8 @@ void main(void) {
 		
 		if(pad & PAD_START) {
 			switch(cursor_pos) {
-				case MENU_BT: jump_to_game(0x01);
-				case MENU_BTDD: jump_to_game(0x05);
+				case MENU_BT: jump_to_game(BT);
+				case MENU_BTDD: jump_to_game(BTDD);
 			};
 		}
     }
