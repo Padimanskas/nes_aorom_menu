@@ -1,22 +1,18 @@
 #include "neslib.h"
 #include <stdint.h>
 
-enum {
-	MENU_BT,
-	MENU_BTDD
-};
-
-enum {
-	BT   = 0x01,
-	BTDD = 0x05
-};
+enum {MENU_BT, MENU_BTDD};
+enum {BT = 0x01, BTDD = 0x05};
 
 extern const unsigned char chr_data[0x2000];
 extern const unsigned char nametable[0x400];
-extern const unsigned char palette[16];
+extern const unsigned char palette[0x10];
 
-unsigned int cursor_pos = MENU_BT;
-static unsigned char pad;
+unsigned char oam_id = 0;
+unsigned char sprite_y = 0;
+unsigned char tile = 0;
+unsigned char cursor_pos = MENU_BT;
+unsigned char pad;
 
 const char TEXT_TITLE[] = "";
 const char TEXT_BT[]    = "BATTLETOADS";
@@ -48,41 +44,21 @@ void draw_menu(void) {
     put_str(NTADR_A(4, 22), TEXT_BTDD);
 }
 
-void set_cursor(unsigned char sprite1, unsigned char sprite2) {
-	unsigned char vram_buffer[7];
-	unsigned short adr1 = NTADR_A(2, 20);
-	unsigned short adr2 = NTADR_A(2, 22);
-
-	vram_buffer[0] = MSB(adr1);
-	vram_buffer[1] = LSB(adr1);
-	vram_buffer[2] = sprite1;
-
-	vram_buffer[3] = MSB(adr2);
-	vram_buffer[4] = LSB(adr2);
-	vram_buffer[5] = sprite2;
-
-	vram_buffer[6] = NT_UPD_EOF;
-
-	set_vram_update(vram_buffer);
-}
-
 void update_cursor(void) {
 	switch(cursor_pos) {
-		case MENU_BT:   { set_cursor(0xe0, 0x00); break; }
-		case MENU_BTDD: { set_cursor(0x00, 0xe0); break; }
+		case MENU_BT:     {sprite_y = 157; break;}
+		case MENU_BTDD:   {sprite_y = 173; break;}
 	};
 }
 
 void cursor_pos_dec() {
 	if(cursor_pos <= MENU_BT) return;
 	cursor_pos--;
-	sfx_play(0x06, 0x00);
 }
 
 void cursor_pos_inc() {
 	if (cursor_pos >= MENU_BTDD) return;
 	cursor_pos++;
-	sfx_play(0x06, 0x00);
 }
 
 void draw_logo() {
@@ -96,16 +72,19 @@ void jump_to_game(unsigned char game_number) {
 }
 
 void main(void) {
+	
 	ppu_off();
 	load_chr_ram(chr_data, sizeof(chr_data), 0);
 	pal_bg(palette);
+	pal_spr(palette);
 	draw_logo();
-    draw_menu();
-    update_cursor();
+	draw_menu();
+	update_cursor();
+	bank_spr(1);
 	ppu_on_all();
 
     while (1) {
-		
+
 		pad = pad_trigger(0);
 
 		if(pad & PAD_UP) {
@@ -117,6 +96,14 @@ void main(void) {
 
 		update_cursor();
 		ppu_wait_nmi();
+		ppu_wait_nmi();
+		ppu_wait_nmi();
+		ppu_wait_nmi();
+		
+		oam_clear();
+		tile = !tile;
+		oam_spr(16, sprite_y, tile, 1, oam_id);
+
 
 		if(pad & PAD_START) {
 			switch(cursor_pos) {
