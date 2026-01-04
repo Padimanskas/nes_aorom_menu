@@ -1,6 +1,6 @@
 NES AOROM Menu
 
-<img width="770" height="724" alt="image" src="https://github.com/user-attachments/assets/585e247e-82c5-47ca-b2c3-585f6c1bedbc" />
+<img width="770" height="724" alt="image" src="https://github.com/user-attachments/assets/fae7f5d0-7284-436b-b350-99e0e880827c" />
 
 
 Menu example for an NES project based on AOROM (mapper 7)
